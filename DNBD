@@ -226,7 +226,7 @@ global r2_t1_rforest = r(mean)
  brain define if train == 1, input($Xvars) output(mntwinesbin) hidden(10 10)
  brain train if train == 1, iter(60) eta(2)
  brain think y_neuralnet if train == 0
- gen target_neuralnet = (y_brain >= .5) if train == 0 
+ gen target_neuralnet = (y_neuralnet >= .5) if train == 0 
  gen pe_neuralnet = (y_neuralnet - mntwinesbin) if train == 0
  sum pe_neuralnet
  global mpe_neuralnet = r(mean)
