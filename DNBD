@@ -243,7 +243,7 @@ global r2_t1_rforest = r(mean)
  di $r2_neuralnet
  
   * Error de tipo 1
-sum target_brain if mntwinesbin == 1
+sum target_neuralnet if mntwinesbin == 1
 global r2_t1_neuralnet = r(mean)
 
 *Matrices de confusión 
