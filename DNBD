@@ -26,7 +26,7 @@ tab mntwines train
 
 *Minímos cuadrados-------------------------------------------------------------
 
-regress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
+regress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1, vce(robust)
 predict y_ols, xb
 gen target_ols = (y_ols >= .5) if train == 0
 gen pe_ols = abs(target_ols - mntwinesbin) if train==0
