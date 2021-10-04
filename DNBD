@@ -46,6 +46,9 @@ sum mntwinesbin if train == 0
  global r2_ols = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_ols
 
+* Error de tipo 1
+sum target_ols if mntwinesbin == 1
+global r2_t1_ols = r(mean)
 
 *Lasso-------------------------------------------------------------------------
 
@@ -66,6 +69,10 @@ global mpe_lasso = r(mean)
  local n_correct = r(N)
  global r2_lasso = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_lasso
+ 
+ * Error de tipo 1
+sum target_lasso if mntwinesbin == 1
+global r2_t1_lasso = r(mean)
 
 *Ridge-------------------------------------------------------------------------
 
@@ -87,6 +94,10 @@ global mpe_ridge = r(mean)
  global r2_ridge = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_ridge
 
+* Error de tipo 1
+sum target_ridge if mntwinesbin == 1
+global r2_t1_ridge = r(mean)
+
 *Elastic Regression------------------------------------------------------------
 
 elasticregress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
@@ -106,6 +117,10 @@ global mpe_elastic = r(mean)
  local n_correct = r(N)
  global r2_elastic = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_elastic
+ 
+ * Error de tipo 1
+sum target_elastic if mntwinesbin == 1
+global r2_t1_elastic = r(mean)
 
 *Logit-------------------------------------------------------------------------
 
@@ -127,6 +142,10 @@ global mpe_logit = r(mean)
  local n_correct = r(N)
  global r2_logit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_logit
+ 
+ * Error de tipo 1
+sum target_logit if mntwinesbin == 1
+global r2_t1_logit = r(mean)
 
 *Probit-----------------------------------------------------------------------
 
@@ -148,6 +167,10 @@ global mpe_probit = r(mean)
  local n_correct = r(N)
  global r2_probit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_probit
+ 
+ * Error de tipo 1
+sum target_probit if mntwinesbin == 1
+global r2_t1_probit = r(mean)
 
 *Penalized logit--------------------------------------------------------------
 
@@ -170,6 +193,10 @@ global mpe_plogit = r(mean)
  global r2_plogit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_plogit
 
+* Error de tipo 1
+sum target_plogit if mntwinesbin == 1
+global r2_t1_plogit = r(mean)
+
 *Random Forest-----------------------------------------------------------
 rforest mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth education2 marital_status2 complain acceptedcmp2 acceptedcmp1 acceptedcmp5 acceptedcmp4 acceptedcmp3 if train == 1, type(reg)
 predict y_rforest if train == 0
@@ -188,6 +215,10 @@ global mpe_rforest=r(mean)
  local n_correct = r(N)
  global r2_rforest = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_rforest
+ 
+ * Error de tipo 1
+sum target_rforest if mntwinesbin == 1
+global r2_t1_rforest = r(mean)
  
  
  *Neural Networks-------------------------------------------------------------
@@ -211,6 +242,10 @@ global mpe_rforest=r(mean)
  global r2_neuralnet= (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_neuralnet
  
+  * Error de tipo 1
+sum target_brain if mntwinesbin == 1
+global r2_t1_brain = r(mean)
+
 *Matrices de confusión 
 tab target_ols mntwinesbin
 tab target_lasso mntwinesbin
@@ -242,3 +277,14 @@ tab target_neuralnet mntwinesbin
  di "The pR2 for  is " $r2_plogit
  di "The pR2 for  is " $r2_neuralnet
  di "The pR2 for  is " $r2_rforest
+
+ *Error T1
+di $r2_t1_ols
+di $r2_t1_lasso
+di $r2_t1_ridge
+di $r2_t1_logit
+di $r2_t1_probit
+di $r2_t1_elastic
+di $r2_t1_plogit
+di $r2_t1_rforest
+di $r2_t1_brain
