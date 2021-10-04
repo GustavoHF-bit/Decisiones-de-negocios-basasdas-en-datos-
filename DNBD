@@ -28,7 +28,7 @@ regress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetpro
 predict y_ols if train == 0, xb
 gen target_ols = (y_ols >= .5) if train == 0
 gen pe_ols = abs(target_ols - mntwinesbin) if train == 0
-gen pe_ols_2 = pe_ols^2 if train == 0
+gen pe_ols_2 = pe_ols if train == 0
 sum pe_ols_2
 global mpe_ols = r(mean)
 di 1 - r(mean) 
