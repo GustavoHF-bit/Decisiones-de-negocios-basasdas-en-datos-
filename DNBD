@@ -246,6 +246,7 @@ global r2_t1_rforest = r(mean)
 sum target_brain if mntwinesbin == 1
 global r2_t1_brain = r(mean)
 
+*Mean percentage error
  di "The mpe for  is " $mpe_ols
  di "The mpe for  is " $mpe_lasso
  di "The mpe for  is " $mpe_ridge
@@ -256,6 +257,7 @@ global r2_t1_brain = r(mean)
  di "The mpe for  is " $mpe_neuralnet
  di "The mpe for  is " $mpe_rforest
  
+ *Pseudo R2
   di "The pR2 for  is " $r2_ols
  di "The pR2 for  is " $r2_lasso
  di "The pR2 for  is " $r2_ridge
