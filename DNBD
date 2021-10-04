@@ -1,11 +1,10 @@
 cls
 clear
 import delimited "C:\Users\jgush\Downloads\base.csv"
+import delimited "/Users/ricardo/Documents/Decisiones Basadas en Datos/base.csv", varnames(1) numericcols(6) clear 
 
 encode education, generate(education2)
 encode marital_status, generate(marital_status2)
-drop if income=="NA"
- destring income, replace
 
 * Para replicaciones
 
@@ -21,18 +20,20 @@ di runiform()
 gen train = (random_var <= .5)
 drop random_var
 
-tab mntwines train
 
 
 *Minímos cuadrados-------------------------------------------------------------
 
-regress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1, vce(robust)
-predict y_ols, xb
+regress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
+predict y_ols if train == 0, xb
 gen target_ols = (y_ols >= .5) if train == 0
-gen pe_ols = abs(target_ols - mntwinesbin) if train==0
-gen pe_ols_2 = pe_ols
-sum pe_ols_2 if train == 0
+gen pe_ols = abs(target_ols - mntwinesbin) if train == 0
+gen pe_ols_2 = pe_ols^2 if train == 0
+sum pe_ols_2
 global mpe_ols = r(mean)
+di 1 - r(mean) 
+tab target_ols mntwinesbin
+sum mntwinesbin if train == 0
 
 *Pseudo R2
  sum mntwinesbin if mntwinesbin == 0 & train == 0
@@ -43,19 +44,16 @@ global mpe_ols = r(mean)
  sum correct_ols if correct_ols == 1
  local n_correct = r(N)
  global r2_ols = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
+ di $r2_ols
 
-* Error de tipo 1
-sum target_ols if mntwinesbin == 1
-global r2_t1_ols = r(mean)
 
 *Lasso-------------------------------------------------------------------------
 
 lassoregress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
 predict y_lasso, xb
 gen target_lasso = (y_lasso >= .5) if train == 0
-gen pe_lasso = abs(target_lasso - mntwinesbin) if train==0
-gen pe_lasso_2 = pe_lasso
-sum pe_lasso_2 if train == 0
+gen pe_lasso = abs(target_lasso - mntwinesbin) if train == 0
+sum pe_lasso
 global mpe_lasso = r(mean)
 
 *Pseudo R2
@@ -69,18 +67,13 @@ global mpe_lasso = r(mean)
  global r2_lasso = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_lasso
 
-* Error de tipo 1
-sum target_lasso if mntwinesbin == 1
-global r2_t1_lasso = r(mean)
-
 *Ridge-------------------------------------------------------------------------
 
 ridgeregress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
 predict y_ridge
 gen target_ridge = (y_ridge >= .5) if train == 0
-gen pe_ridge = abs(target_ridge - mntwinesbin) if train==0
-gen pe_ridge_2 = pe_ridge
-sum pe_ridge if train == 0
+gen pe_ridge = abs(target_ridge - mntwinesbin) if train == 0
+sum pe_ridge
 global mpe_ridge = r(mean)
 
 *Pseudo R2
@@ -92,19 +85,15 @@ global mpe_ridge = r(mean)
  sum correct_ridge if correct_ridge == 1
  local n_correct = r(N)
  global r2_ridge = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
-
-* Error de tipo 1
-sum target_ridge if mntwinesbin == 1
-global r2_t1_ridge = r(mean)
+ di $r2_ridge
 
 *Elastic Regression------------------------------------------------------------
 
 elasticregress mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1 
 predict y_elastic
 gen target_elastic = (y_elastic >= .5) if train == 0
-gen pe_elastic = abs(target_elastic - mntwinesbin) if train==0
-gen pe_elastic_2 = pe_elastic^2 
-sum pe_elastic_2 if train == 0
+gen pe_elastic = abs(target_elastic - mntwinesbin) if train == 0
+sum pe_elastic
 global mpe_elastic = r(mean)
 
 *Pseudo R2
@@ -116,20 +105,16 @@ global mpe_elastic = r(mean)
  sum correct_elastic if correct_elastic == 1
  local n_correct = r(N)
  global r2_elastic = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
-
-* Error de tipo 1
-sum target_elastic if mntwinesbin == 1
-global r2_t1_elastic = r(mean)
+ di $r2_elastic
 
 *Logit-------------------------------------------------------------------------
 
 logit mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1
 margins, dydx(*)
 predict y_logit
-gen target_logit = (y_logit >= .05) if train == 0
-gen pe_logit = abs(target_logit - mntwinesbin) if train==0
-gen pe_logit_2 = pe_logit
-sum pe_logit_2 if train == 0
+gen target_logit = (y_logit >= .5) if train == 0
+gen pe_logit = abs(target_logit - mntwinesbin) if train == 0
+sum pe_logit
 global mpe_logit = r(mean)
 
 *Pseudo R2
@@ -141,21 +126,16 @@ global mpe_logit = r(mean)
  sum correct_logit if correct_logit == 1
  local n_correct = r(N)
  global r2_logit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
-
-* Error de tipo 1
-sum target_logit if mntwinesbin == 1
-global r2_t1_logit = r(mean)
+ di $r2_logit
 
 *Probit-----------------------------------------------------------------------
 
 probit mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numwebvisitsmonth i.marital_status2 i.acceptedcmp1 i.acceptedcmp2 i.acceptedcmp3 i.acceptedcmp4 i.acceptedcmp5 i.complain i.education2 if train==1
-
-predict y_probit
+predict y_probit if train == 0
 margins, dydx(*)
 gen target_probit = (y_probit >= .5) if train == 0
 gen pe_probit = abs(target_probit - mntwinesbin) if train == 0
-gen pe_probit_2 = pe_probit
-sum pe_probit_2 if train == 0
+sum pe_probit
 global mpe_probit = r(mean)
 
 *Pseudo R2
@@ -167,20 +147,16 @@ global mpe_probit = r(mean)
  sum correct_probit if correct_probit == 1
  local n_correct = r(N)
  global r2_probit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
-
-* Error de tipo 1
-sum target_probit if mntwinesbin == 1
-global r2_t1_probit = r(mean)
+ di $r2_probit
 
 *Penalized logit--------------------------------------------------------------
 
 rlassologit mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth i.education2 i.marital_status2 i.complain i.acceptedcmp2 i.acceptedcmp1 i.acceptedcmp5 i.acceptedcmp4 i.acceptedcmp3 if train==1
 margins, dydx(*)
-predict y_plogit if train==0,pr
+predict y_plogit if train == 0, pr
 gen target_plogit = (y_plogit >= .5) if train == 0
-gen pe_plogit = abs(target_plogit - mntwinesbin) if train==0
-gen pe_plogit_2 = pe_plogit
-sum pe_plogit_2 if train == 0
+gen pe_plogit = abs(target_plogit - mntwinesbin) if train == 0
+sum pe_plogit
 global mpe_plogit = r(mean)
 
 *Pseudo R2
@@ -194,18 +170,12 @@ global mpe_plogit = r(mean)
  global r2_plogit = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
  di $r2_plogit
 
-* Error de tipo 1
-sum target_plogit if mntwinesbin == 1
-global r2_t1_plogit = r(mean)
-
-
 *Random Forest-----------------------------------------------------------
 rforest mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth education2 marital_status2 complain acceptedcmp2 acceptedcmp1 acceptedcmp5 acceptedcmp4 acceptedcmp3 if train == 1, type(reg)
 predict y_rforest if train == 0
 gen target_rforest = (y_rforest >= .5) if train == 0 
-gen pe_rforest = abs(target_rforest - mntwinesbin) if train==0
-gen pe_rforest_2=pe_rforest
-sum pe_rforest_2 if train==0
+gen pe_rforest = abs(target_rforest - mntwinesbin) if train == 0
+sum pe_rforest
 global mpe_rforest=r(mean)
 
 *Pseudo R2
@@ -217,22 +187,20 @@ global mpe_rforest=r(mean)
  sum correct_rforest if correct_rforest == 1
  local n_correct = r(N)
  global r2_rforest = (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
-
-* Error de tipo 1
-sum target_rforest if mntwinesbin == 1
-global r2_t1_rforest = r(mean)
-
+ di $r2_rforest
+ 
+ 
  *Neural Networks-------------------------------------------------------------
  global Xvars mntwinesbin income mntfruits mntmeatproducts mntfishproducts mntsweetproducts mntgoldprods numdealspurchases numwebpurchases numcatalogpurchases numwebvisitsmonth
- brain define if _n<=100, input($Xvars) output(mntwinesbin) hidden(10 10) 
- brain train if _n<=100, iter(500) eta(.10)
- capture drop y_neuralnet
- brain think y_neuralnet 
- gen pe_neuralnet = (y_neuralnet - mntwinesbin) if _n>= 101
+ brain define if train == 1, input($Xvars) output(mntwinesbin) hidden(10 10)
+ brain train if train == 1, iter(60) eta(2)
+ brain think y_neuralnet if train == 0
+ gen target_neuralnet = (y_brain >= .5) if train == 0 
+ gen pe_neuralnet = (y_neuralnet - mntwinesbin) if train == 0
  sum pe_neuralnet
  global mpe_neuralnet = r(mean)
  
-  *Pseudo R2
+ *Pseudo R2
  sum mntwinesbin if mntwinesbin == 0 & train == 0
  local n_most_freq_outcome = r(N)
  sum mntwinesbin if train == 0
@@ -241,12 +209,19 @@ global r2_t1_rforest = r(mean)
  sum correct_neuralnet if correct_neuralnet == 1
  local n_correct = r(N)
  global r2_neuralnet= (`n_correct' - `n_most_freq_outcome')/(`n_total' - `n_most_freq_outcome')
+ di $r2_neuralnet
  
- * Error de tipo 1
-sum target_brain if mntwinesbin == 1
-global r2_t1_brain = r(mean)
+*Matrices de confusión 
+tab target_ols mntwinesbin
+tab target_lasso mntwinesbin
+tab target_ridge mntwinesbin
+tab target_logit mntwinesbin
+tab target_probit mntwinesbin
+tab target_plogit mntwinesbin
+tab target_rforest mntwinesbin
+tab target_neuralnet mntwinesbin
 
-*Mean percentage error
+ *Mean percentage error
  di "The mpe for  is " $mpe_ols
  di "The mpe for  is " $mpe_lasso
  di "The mpe for  is " $mpe_ridge
@@ -258,7 +233,7 @@ global r2_t1_brain = r(mean)
  di "The mpe for  is " $mpe_rforest
  
  *Pseudo R2
-  di "The pR2 for  is " $r2_ols
+ di "The pR2 for  is " $r2_ols
  di "The pR2 for  is " $r2_lasso
  di "The pR2 for  is " $r2_ridge
  di "The pR2 for  is " $r2_elastic
@@ -267,14 +242,3 @@ global r2_t1_brain = r(mean)
  di "The pR2 for  is " $r2_plogit
  di "The pR2 for  is " $r2_neuralnet
  di "The pR2 for  is " $r2_rforest
- 
- *Error T1 (R2 enfocada al tipo 1) 
-di $r2_t1_ols
-di $r2_t1_lasso
-di $r2_t1_ridge
-di $r2_t1_logit
-di $r2_t1_probit
-di $r2_t1_elastic
-di $r2_t1_plogit
-di $r2_t1_rforest
-di $r2_t1_brain
