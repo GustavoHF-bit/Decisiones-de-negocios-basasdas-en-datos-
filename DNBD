@@ -2,7 +2,7 @@ cls
 clear
 import delimited "C:\Users\jgush\Downloads\base.csv"
 import delimited "/Users/ricardo/Documents/Decisiones Basadas en Datos/base.csv", varnames(1) numericcols(6) clear 
-
+drop if income == "NA"
 encode education, generate(education2)
 encode marital_status, generate(marital_status2)
 
@@ -244,7 +244,7 @@ global r2_t1_rforest = r(mean)
  
   * Error de tipo 1
 sum target_brain if mntwinesbin == 1
-global r2_t1_brain = r(mean)
+global r2_t1_neuralnet = r(mean)
 
 *Matrices de confusión 
 tab target_ols mntwinesbin
@@ -287,4 +287,4 @@ di $r2_t1_probit
 di $r2_t1_elastic
 di $r2_t1_plogit
 di $r2_t1_rforest
-di $r2_t1_brain
+di $r2_t1_neuralnet
